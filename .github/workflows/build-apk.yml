@@ -20,11 +20,13 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    # 3. Configura a ferramenta Gradle automaticamente no ambiente CI
+    # 3. Configura a ferramenta Gradle desativando o cache para evitar falhas de rede no GitHub
     - name: Configurar Gradle
       uses: gradle/gradle-build-action@v3
+      with:
+        cache-disabled: true
 
-    # 4. Configura parâmetros de memória do Gradle para evitar erros de compilação
+    # 4. Configura parâmetros de memória do Gradle para estabilidade
     - name: Configurar Parâmetros de Memória do Gradle
       run: |
         mkdir -p ~/.gradle
