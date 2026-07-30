@@ -13,14 +13,18 @@ jobs:
     - name: Clonar Repositório
       uses: actions/checkout@v4.2.2
 
-    # 2. Configura o ambiente Java JDK 17 (Removido cache problemático para evitar erro de chave)
+    # 2. Configura o ambiente Java JDK 17
     - name: Configurar Java JDK 17
       uses: actions/setup-java@v4.7.0
       with:
         java-version: '17'
         distribution: 'temurin'
 
-    # 3. Configura opções de memória e estabilidade do Gradle para o ambiente CI
+    # 3. Configura a ferramenta Gradle automaticamente no ambiente CI
+    - name: Configurar Gradle
+      uses: gradle/gradle-build-action@v3
+
+    # 4. Configura parâmetros de memória do Gradle para evitar erros de compilação
     - name: Configurar Parâmetros de Memória do Gradle
       run: |
         mkdir -p ~/.gradle
@@ -28,7 +32,7 @@ jobs:
         echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
         echo "android.useAndroidX=true" >> ~/.gradle/gradle.properties
 
-    # 4. Gera a Keystore de Assinatura Digital para permitir a instalação no Android sem alertas
+    # 5. Gera a Keystore de Assinatura Digital para instalação segura no Android
     - name: Gerar Keystore de Assinatura Digital do APK
       run: |
         keytool -genkeypair -v \
@@ -41,20 +45,16 @@ jobs:
           -keypass android \
           -dname "CN=AutoVideoEditor, OU=Dev, O=App, L=City, S=State, C=BR"
 
-    # 5. Concede permissão de execução ao wrapper do Gradle
-    - name: Dar permissão de execução ao Gradle Wrapper
-      run: chmod +x gradlew
-
-    # 6. Compila o APK Release assinado com log detalhado de erros
+    # 6. Compila o APK Release assinado utilizando o Gradle do sistema
     - name: Compilar APK Release Assinado
       env:
         KEYSTORE_FILE: "keystore.jks"
         KEYSTORE_PASSWORD: "android"
         KEY_ALIAS: "androidkey"
         KEY_PASSWORD: "android"
-      run: ./gradlew assembleRelease --no-daemon --stacktrace
+      run: gradle assembleRelease --no-daemon --stacktrace
 
-    # 7. Disponibiliza o arquivo APK gerado na seção de Artefatos do GitHub Actions
+    # 7. Salva o arquivo APK gerado nos Artefatos para download
     - name: Salvar APK em Artefato para Download
       uses: actions/upload-artifact@v4
       with:
