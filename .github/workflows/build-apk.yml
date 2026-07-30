@@ -23,28 +23,39 @@ jobs:
         rm -rf build
         rm -rf .gradle
 
-    # 3. Configura o ambiente Java JDK 17 sem utilizar cache legado
+    # 3. Configura o ambiente Java JDK 17
     - name: Configurar Java JDK 17
       uses: actions/setup-java@v4.7.0
       with:
         java-version: '17'
         distribution: 'temurin'
 
-    # 4. Configura o Gradle utilizando a nova action oficial (setup-gradle v4)
+    # 4. Configura o Gradle utilizando a action oficial (setup-gradle v4)
     - name: Configurar Gradle (Action Oficial Atualizada)
       uses: gradle/actions/setup-gradle@v4
       with:
         cache-disabled: true
 
-    # 5. Configura parâmetros de memória do Gradle para estabilidade do ambiente
-    - name: Configurar Parâmetros de Memória do Gradle
+    # 5. Configura repositórios remotos globais para garantir a resolução de dependências do módulo :app
+    - name: Configurar Repositórios Globais e Parâmetros de Memória
       run: |
         mkdir -p ~/.gradle
         echo "org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m" >> ~/.gradle/gradle.properties
         echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
         echo "android.useAndroidX=true" >> ~/.gradle/gradle.properties
+        
+        # Cria um script de inicialização para garantir repositórios ativos na resolução do :app
+        cat << 'EOF' > ~/.gradle/init.gradle
+        allprojects {
+            repositories {
+                google()
+                mavenCentral()
+                maven { url 'https://jitpack.io' }
+            }
+        }
+        EOF
 
-    # 6. Gera a Keystore de Assinatura Digital para permitir a instalação no Android sem alertas
+    # 6. Gera a Keystore de Assinatura Digital no local exato esperado pelo build do módulo :app
     - name: Gerar Keystore de Assinatura Digital do APK
       run: |
         keytool -genkeypair -v \
@@ -57,14 +68,14 @@ jobs:
           -keypass android \
           -dname "CN=AutoVideoEditor, OU=Dev, O=App, L=City, S=State, C=BR"
 
-    # 7. Executa uma compilação 100% limpa (clean) do APK Release assinado
+    # 7. Executa a compilação do APK Release forçando o download de dependências
     - name: Compilar APK Release Assinado
       env:
         KEYSTORE_FILE: "keystore.jks"
         KEYSTORE_PASSWORD: "android"
         KEY_ALIAS: "androidkey"
         KEY_PASSWORD: "android"
-      run: gradle clean assembleRelease --no-daemon --stacktrace
+      run: gradle assembleRelease --refresh-dependencies --no-daemon --stacktrace
 
     # 8. Salva o arquivo APK gerado nos Artefatos do GitHub para download
     - name: Salvar APK em Artefato para Download
