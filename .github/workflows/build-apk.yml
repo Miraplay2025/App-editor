@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Clona o repositório com Action Atualizada
+    # 1. Clona o repositório
     - name: Clonar Repositório
       uses: actions/checkout@v4.2.2
 
@@ -40,7 +40,7 @@ jobs:
     - name: Dar Permissão de Execução ao Gradle Wrapper
       run: chmod +x gradlew
 
-    # 6. Gera a Keystore de Assinatura Digital no local exato do app
+    # 6. Gera a Keystore de Assinatura Digital
     - name: Gerar Keystore de Assinatura Digital do APK
       run: |
         keytool -genkeypair -v \
@@ -53,14 +53,9 @@ jobs:
           -keypass android \
           -dname "CN=AutoVideoEditor, OU=Dev, O=App, L=City, S=State, C=BR"
 
-    # 7. Compila o APK Release com estratégia in-process para o compilador Kotlin
+    # 7. Compila o APK Release
     - name: Compilar APK Release Assinado
-      env:
-        KEYSTORE_FILE: "keystore.jks"
-        KEYSTORE_PASSWORD: "android"
-        KEY_ALIAS: "androidkey"
-        KEY_PASSWORD: "android"
-      run: ./gradlew assembleRelease --no-daemon --max-workers=2 -Dkotlin.compiler.execution.strategy=in-process --stacktrace --info
+      run: ./gradlew assembleRelease --no-daemon --max-workers=1 --stacktrace --info
 
     # 8. Salva o APK final nos Artefatos
     - name: Salvar APK em Artefato para Download
