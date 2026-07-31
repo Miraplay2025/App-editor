@@ -28,14 +28,12 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    # 4. Configura o Gradle com a action oficial (desativando cache persistente de daemon)
-    - name: Configurar Gradle
-      uses: gradle/actions/setup-gradle@v4
-      with:
-        cache-disabled: true
+    # 4. Configura permissões do Gradle Wrapper
+    - name: Dar Permissão de Execução ao Gradle Wrapper
+      run: chmod +x gradlew
 
-    # 5. Configura parâmetros de memória e desativa o Daemon do Gradle
-    - name: Configurar Parâmetros de Memória e Desativar Daemon
+    # 5. Configura parâmetros de memória do Gradle
+    - name: Configurar Parâmetros de Memória do Gradle
       run: |
         mkdir -p ~/.gradle
         echo "org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m -XX:+UseG1GC" >> ~/.gradle/gradle.properties
@@ -55,14 +53,14 @@ jobs:
           -keypass android \
           -dname "CN=AutoVideoEditor, OU=Dev, O=App, L=City, S=State, C=BR"
 
-    # 7. Compila o APK Release assinado explicitando --no-daemon
+    # 7. Compila o APK Release assinado utilizando o Gradle Wrapper oficial do projeto
     - name: Compilar APK Release Assinado
       env:
         KEYSTORE_FILE: "keystore.jks"
         KEYSTORE_PASSWORD: "android"
         KEY_ALIAS: "androidkey"
         KEY_PASSWORD: "android"
-      run: gradle assembleRelease --no-daemon --refresh-dependencies --stacktrace
+      run: ./gradlew assembleRelease --no-daemon --stacktrace
 
     # 8. Salva o APK final nos Artefatos
     - name: Salvar APK em Artefato para Download
