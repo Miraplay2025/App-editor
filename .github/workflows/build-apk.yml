@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Clona o repositório
+    # 1. Clona o repositório com Action Atualizada
     - name: Clonar Repositório
       uses: actions/checkout@v4.2.2
 
