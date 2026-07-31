@@ -15,10 +15,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        ndk {
-            abiFilters.addAll(setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
-        }
     }
 
     signingConfigs {
@@ -68,13 +64,15 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
 
-    // Google Cloud Speech-to-Text Client para Detecção Precisa de Pausas na Narração
+    // Google Cloud Speech-to-Text Client
     implementation("com.google.cloud:google-cloud-speech:4.32.0") {
         exclude(group = "org.apache.httpcomponents")
     }
 
-    // Processamento de Vídeo e Áudio - Biblioteca FFmpeg Ativa e Mantida
-    implementation("com.github.microshow:RxFFmpeg:4.9.0")
+    // Processamento Nativo de Vídeo e Áudio Oficial da Google (Substitui o FFmpeg e resolve o estouro de memória)
+    implementation("androidx.media3:media3-transformer:1.2.1")
+    implementation("androidx.media3:media3-effect:1.2.1")
+    implementation("androidx.media3:media3-common:1.2.1")
 
     // Carregamento e Pré-visualização de Imagens
     implementation("com.github.bumptech.glide:glide:4.16.0")
