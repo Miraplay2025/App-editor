@@ -53,14 +53,14 @@ jobs:
           -keypass android \
           -dname "CN=AutoVideoEditor, OU=Dev, O=App, L=City, S=State, C=BR"
 
-    # 7. Compila o APK Release com limite explícito de workers para evitar falha do DefaultWorkerLeaseService
+    # 7. Compila o APK Release com estratégia in-process para o compilador Kotlin
     - name: Compilar APK Release Assinado
       env:
         KEYSTORE_FILE: "keystore.jks"
         KEYSTORE_PASSWORD: "android"
         KEY_ALIAS: "androidkey"
         KEY_PASSWORD: "android"
-      run: ./gradlew assembleRelease --no-daemon --max-workers=2 --stacktrace --info
+      run: ./gradlew assembleRelease --no-daemon --max-workers=2 -Dkotlin.compiler.execution.strategy=in-process --stacktrace --info
 
     # 8. Salva o APK final nos Artefatos
     - name: Salvar APK em Artefato para Download
