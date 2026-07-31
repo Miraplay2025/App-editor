@@ -12,7 +12,7 @@ jobs:
     - name: Clonar Repositório
       uses: actions/checkout@v4.2.2
 
-    # 2. Limpa resíduos temporários de compilação
+    # 2. Limpa resíduos temporários e caches antigos
     - name: Limpar Caches e Resíduos Anteriores
       run: |
         rm -rf ~/.gradle
@@ -28,7 +28,7 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    # 4. Gera o Gradle Wrapper caso não esteja presente no repositório
+    # 4. Garantir existência do Gradle Wrapper
     - name: Garantir Existência do Gradle Wrapper
       run: |
         if [ ! -f "gradlew" ]; then
@@ -36,12 +36,12 @@ jobs:
           gradle wrapper --gradle-version 8.5
         fi
 
-    # 5. Configura permissões do Gradle Wrapper
+    # 5. Dá permissão de execução ao Wrapper
     - name: Dar Permissão de Execução ao Gradle Wrapper
       run: chmod +x gradlew
 
-    # 6. Gera a Keystore de Assinatura Digital
-    - name: Gerar Keystore de Assinatura Digital do APK
+    # 6. Gera a Keystore de Assinatura Digital do APK
+    - name: Gerar Keystore de Assinatura Digital
       run: |
         keytool -genkeypair -v \
           -keystore app/keystore.jks \
@@ -53,11 +53,11 @@ jobs:
           -keypass android \
           -dname "CN=AutoVideoEditor, OU=Dev, O=App, L=City, S=State, C=BR"
 
-    # 7. Compila o APK Release passando flags para estabilização do AAPT2
+    # 7. Compila o APK com a estratégia In-Process ativada
     - name: Compilar APK Release Assinado
-      run: ./gradlew assembleRelease --no-daemon --max-workers=1 -Dandroid.enableAapt2Daemon=false --stacktrace --info
+      run: ./gradlew assembleRelease --no-daemon --max-workers=1 -Dkotlin.compiler.execution.strategy=in-process --stacktrace --info
 
-    # 8. Salva o APK final nos Artefatos
+    # 8. Salva o APK gerado nos Artefatos do GitHub
     - name: Salvar APK em Artefato para Download
       uses: actions/upload-artifact@v4
       with:
