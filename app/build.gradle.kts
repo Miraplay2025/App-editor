@@ -15,6 +15,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        ndk {
+            abiFilters.addAll(setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
+        }
     }
 
     signingConfigs {
@@ -69,8 +73,8 @@ dependencies {
         exclude(group = "org.apache.httpcomponents")
     }
 
-    // Processamento de Vídeo e Áudio - Versão LTS Estável Registrada no Maven
-    implementation("com.arthenica:ffmpeg-kit-full:4.5.LTS")
+    // Processamento de Vídeo e Áudio - Dependência Estável e Disponível no Maven Central
+    implementation("com.arthenica:mobile-ffmpeg-full:4.4")
 
     // Carregamento e Pré-visualização de Imagens
     implementation("com.github.bumptech.glide:glide:4.16.0")
