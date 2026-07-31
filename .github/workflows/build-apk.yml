@@ -61,14 +61,14 @@ jobs:
           -keypass android \
           -dname "CN=AutoVideoEditor, OU=Dev, O=App, L=City, S=State, C=BR"
 
-    # 8. Compila o APK Release assinado utilizando o Gradle Wrapper oficial
-    - name: Compilar APK Release Assinado
+    # 8. Compila o APK Release exibindo logs detalhados de exceção (--stacktrace --info)
+    - name: Compilar APK Release Assinado com Logs Detalhados
       env:
         KEYSTORE_FILE: "keystore.jks"
         KEYSTORE_PASSWORD: "android"
         KEY_ALIAS: "androidkey"
         KEY_PASSWORD: "android"
-      run: ./gradlew assembleRelease --no-daemon --stacktrace
+      run: ./gradlew assembleRelease --no-daemon --stacktrace --info
 
     # 9. Salva o APK final nos Artefatos
     - name: Salvar APK em Artefato para Download
