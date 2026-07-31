@@ -28,11 +28,19 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    # 4. Configura permissões do Gradle Wrapper
+    # 4. Gera o Gradle Wrapper caso não esteja presente no repositório
+    - name: Garantir Existência do Gradle Wrapper
+      run: |
+        if [ ! -f "gradlew" ]; then
+          echo "gradlew não encontrado. Gerando Wrapper automaticamente..."
+          gradle wrapper --gradle-version 8.5
+        fi
+
+    # 5. Configura permissões do Gradle Wrapper
     - name: Dar Permissão de Execução ao Gradle Wrapper
       run: chmod +x gradlew
 
-    # 5. Configura parâmetros de memória do Gradle
+    # 6. Configura parâmetros de memória do Gradle
     - name: Configurar Parâmetros de Memória do Gradle
       run: |
         mkdir -p ~/.gradle
@@ -40,7 +48,7 @@ jobs:
         echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
         echo "android.useAndroidX=true" >> ~/.gradle/gradle.properties
 
-    # 6. Gera a Keystore de Assinatura Digital no local exato do app
+    # 7. Gera a Keystore de Assinatura Digital no local exato do app
     - name: Gerar Keystore de Assinatura Digital do APK
       run: |
         keytool -genkeypair -v \
@@ -53,7 +61,7 @@ jobs:
           -keypass android \
           -dname "CN=AutoVideoEditor, OU=Dev, O=App, L=City, S=State, C=BR"
 
-    # 7. Compila o APK Release assinado utilizando o Gradle Wrapper oficial do projeto
+    # 8. Compila o APK Release assinado utilizando o Gradle Wrapper oficial
     - name: Compilar APK Release Assinado
       env:
         KEYSTORE_FILE: "keystore.jks"
@@ -62,7 +70,7 @@ jobs:
         KEY_PASSWORD: "android"
       run: ./gradlew assembleRelease --no-daemon --stacktrace
 
-    # 8. Salva o APK final nos Artefatos
+    # 9. Salva o APK final nos Artefatos
     - name: Salvar APK em Artefato para Download
       uses: actions/upload-artifact@v4
       with:
