@@ -50,6 +50,9 @@ android {
         resources {
             excludes += "META-INF/INDEX.LIST"
             excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/LICENSE"
+            excludes += "META-INF/LICENSE.txt"
+            excludes += "META-INF/NOTICE"
         }
     }
 }
@@ -66,8 +69,8 @@ dependencies {
         exclude(group = "org.apache.httpcomponents")
     }
 
-    // Processamento de Vídeo e Áudio
-    implementation("com.arthenica:ffmpeg-kit-full:5.1")
+    // Processamento de Vídeo e Áudio - Versão LTS Estável Registrada no Maven
+    implementation("com.arthenica:ffmpeg-kit-full:4.5.LTS")
 
     // Carregamento e Pré-visualização de Imagens
     implementation("com.github.bumptech.glide:glide:4.16.0")
