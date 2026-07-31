@@ -1,6 +1,5 @@
 name: Build e Assinatura do APK Android
 
-# Execução estritamente manual via interface do GitHub (Aba Actions -> Run workflow)
 on:
   workflow_dispatch:
 
@@ -9,14 +8,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Clona o repositório atual
+    # 1. Clona o repositório
     - name: Clonar Repositório
       uses: actions/checkout@v4.2.2
 
-    # 2. Exclui rigorosamente todos os downloads, caches e resíduos temporários anteriores
-    - name: Excluir e Limpar Todos os Downloads e Caches Anteriores
+    # 2. Limpa resíduos temporários e diretórios
+    - name: Limpar Caches e Resíduos Anteriores
       run: |
-        echo "Limpando diretórios de cache e downloads anteriores..."
         rm -rf ~/.gradle
         rm -rf ~/.m2
         rm -rf app/build
@@ -30,32 +28,21 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    # 4. Configura o Gradle utilizando a action oficial (setup-gradle v4)
-    - name: Configurar Gradle (Action Oficial Atualizada)
+    # 4. Configura o Gradle com a action oficial
+    - name: Configurar Gradle
       uses: gradle/actions/setup-gradle@v4
       with:
         cache-disabled: true
 
-    # 5. Configura repositórios remotos globais para garantir a resolução de dependências do módulo :app
-    - name: Configurar Repositórios Globais e Parâmetros de Memória
+    # 5. Configura parâmetros de memória do Gradle
+    - name: Configurar Parâmetros de Memória do Gradle
       run: |
         mkdir -p ~/.gradle
         echo "org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m" >> ~/.gradle/gradle.properties
         echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
         echo "android.useAndroidX=true" >> ~/.gradle/gradle.properties
-        
-        # Cria um script de inicialização para garantir repositórios ativos na resolução do :app
-        cat << 'EOF' > ~/.gradle/init.gradle
-        allprojects {
-            repositories {
-                google()
-                mavenCentral()
-                maven { url 'https://jitpack.io' }
-            }
-        }
-        EOF
 
-    # 6. Gera a Keystore de Assinatura Digital no local exato esperado pelo build do módulo :app
+    # 6. Gera a Keystore de Assinatura Digital no local exato do app
     - name: Gerar Keystore de Assinatura Digital do APK
       run: |
         keytool -genkeypair -v \
@@ -68,7 +55,7 @@ jobs:
           -keypass android \
           -dname "CN=AutoVideoEditor, OU=Dev, O=App, L=City, S=State, C=BR"
 
-    # 7. Executa a compilação do APK Release forçando o download de dependências
+    # 7. Compila o APK Release assinado
     - name: Compilar APK Release Assinado
       env:
         KEYSTORE_FILE: "keystore.jks"
@@ -77,7 +64,7 @@ jobs:
         KEY_PASSWORD: "android"
       run: gradle assembleRelease --refresh-dependencies --no-daemon --stacktrace
 
-    # 8. Salva o arquivo APK gerado nos Artefatos do GitHub para download
+    # 8. Salva o APK final nos Artefatos
     - name: Salvar APK em Artefato para Download
       uses: actions/upload-artifact@v4
       with:
