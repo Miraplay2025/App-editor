@@ -12,7 +12,7 @@ jobs:
     - name: Clonar Repositório
       uses: actions/checkout@v4.2.2
 
-    # 2. Limpa resíduos temporários e diretórios
+    # 2. Limpa resíduos temporários de compilação
     - name: Limpar Caches e Resíduos Anteriores
       run: |
         rm -rf ~/.gradle
@@ -53,9 +53,9 @@ jobs:
           -keypass android \
           -dname "CN=AutoVideoEditor, OU=Dev, O=App, L=City, S=State, C=BR"
 
-    # 7. Compila o APK Release
+    # 7. Compila o APK Release passando flags para estabilização do AAPT2
     - name: Compilar APK Release Assinado
-      run: ./gradlew assembleRelease --no-daemon --max-workers=1 --stacktrace --info
+      run: ./gradlew assembleRelease --no-daemon --max-workers=1 -Dandroid.enableAapt2Daemon=false --stacktrace --info
 
     # 8. Salva o APK final nos Artefatos
     - name: Salvar APK em Artefato para Download
