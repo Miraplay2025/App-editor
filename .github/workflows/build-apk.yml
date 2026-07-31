@@ -40,15 +40,7 @@ jobs:
     - name: Dar Permissão de Execução ao Gradle Wrapper
       run: chmod +x gradlew
 
-    # 6. Configura parâmetros de memória do Gradle
-    - name: Configurar Parâmetros de Memória do Gradle
-      run: |
-        mkdir -p ~/.gradle
-        echo "org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=512m -XX:+UseG1GC" >> ~/.gradle/gradle.properties
-        echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
-        echo "android.useAndroidX=true" >> ~/.gradle/gradle.properties
-
-    # 7. Gera a Keystore de Assinatura Digital no local exato do app
+    # 6. Gera a Keystore de Assinatura Digital no local exato do app
     - name: Gerar Keystore de Assinatura Digital do APK
       run: |
         keytool -genkeypair -v \
@@ -61,16 +53,16 @@ jobs:
           -keypass android \
           -dname "CN=AutoVideoEditor, OU=Dev, O=App, L=City, S=State, C=BR"
 
-    # 8. Compila o APK Release exibindo logs detalhados de exceção (--stacktrace --info)
-    - name: Compilar APK Release Assinado com Logs Detalhados
+    # 7. Compila o APK Release com limite explícito de workers para evitar falha do DefaultWorkerLeaseService
+    - name: Compilar APK Release Assinado
       env:
         KEYSTORE_FILE: "keystore.jks"
         KEYSTORE_PASSWORD: "android"
         KEY_ALIAS: "androidkey"
         KEY_PASSWORD: "android"
-      run: ./gradlew assembleRelease --no-daemon --stacktrace --info
+      run: ./gradlew assembleRelease --no-daemon --max-workers=2 --stacktrace --info
 
-    # 9. Salva o APK final nos Artefatos
+    # 8. Salva o APK final nos Artefatos
     - name: Salvar APK em Artefato para Download
       uses: actions/upload-artifact@v4
       with:
